@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.lguplus.medialog</groupId>
-	<artifactId>jsp-project-sample</artifactId>
+	<artifactId>vue-board-project</artifactId>
 	<version>0.0.1</version>
-	<name>jsp-project-sample</name>
+	<name>vue-board-project</name>
 	<packaging>war</packaging>
 	<properties>
 		<java.version>1.8</java.version>

@@ -5,7 +5,7 @@ server:
    development: true
 
 spring:
-  application.name: jsp-project-sample
+  application.name: vue-board-project
   profiles.active: local
   mvc:
     view:
