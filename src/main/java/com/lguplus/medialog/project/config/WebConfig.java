@@ -11,19 +11,7 @@ import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-	@Bean
-	public TilesConfigurer tilesConfigurer() {
-		TilesConfigurer tilesConfigurer = new TilesConfigurer();
-		tilesConfigurer.setDefinitions(new String[] {"/WEB-INF/tiles/tiles.xml"});
-		tilesConfigurer.setCheckRefresh(true);
-		return tilesConfigurer;
-	}
 
-	@Override
-	public void configureViewResolvers(ViewResolverRegistry registry) {
-		TilesViewResolver viewResolver = new TilesViewResolver();
-		registry.viewResolver(viewResolver);
-	}
 	
 //	@Bean
 //	public CommonsMultipartResolver multipartResolver() {

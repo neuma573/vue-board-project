@@ -1,11 +1,26 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-    <router-link to="/login">Login</router-link>
-  </nav>
-  <router-view/>
+<div id="app">
+<div>{{ message }}</div>
+<div id="nav">
+<router-link to="/">Home</router-link> |
+<router-link to="/about">About</router-link> |
+<router-link to="/login">Login</router-link>
+</div>
+<router-view/>
+</div>
 </template>
 
-<style>
-</style>
+<script>
+
+export default {
+  data: function () {
+    return {
+      message: ''
+    }
+  },
+  methods: {
+    load: function () {}
+  },
+  mounted: function () {}
+}
+</script>

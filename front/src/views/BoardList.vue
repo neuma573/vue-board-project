@@ -68,6 +68,7 @@
 <!-- ㅋㅋ -->
 </template>
 <script>
+import axios from 'axios'
 export default {
   components: {},
   data () {
@@ -93,7 +94,15 @@ export default {
     }
   },
   beforeCreate () {},
-  created () {},
+  created () {
+    axios.get('http://localhost:8080/board/get-board-list.do')
+      .then(function (response) {
+        console.log(response)
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  },
   beforeMount () {},
   mounted () {},
   beforeUpdate () {},

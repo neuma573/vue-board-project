@@ -1,0 +1,22 @@
+<!-- <html lang="en"> -->
+	<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+  <html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  ROLE_ADMIIN + ROLE_USER 권한 계정: foo/foopwd<br/>
+  ROLE_USER 권한 계정: bar/barpwd<br/>
+  <br/>
+  도메인 사용하여 로그인하려면 SecurityConfig에서 활성화 시켜야 함.<br/>
+  ROLE_ADMIIN 권한 도메인 소속 계정: hoo/hoopwd/acorp<br/>
+  <br/>
+  <div>
+    USER_ROLE_MAP 테이블에 등록되지 않은 계정은 ROLE_USER 권한으로 로그인 됨.
+  </div>
+  <br/>
+  
+</body>
+</html>

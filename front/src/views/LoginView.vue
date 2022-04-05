@@ -1,4 +1,5 @@
 <template>
+<div class="loginvie">
 <div id="top" class="width868 login_wrap">
   <main id="container">
     <div class="content login">
@@ -7,14 +8,14 @@
           <div class="con_box login_page kap_codewrap">
             <div class="login_inputbox">
               <div class="inner">
-                <form action="#" name="login" method="post" accept-charset="utf-8">
+                <form name="login" method="post" accept-charset="utf-8" @submit.prevent="load">
                   <fieldset>
 
                     <div>
-                      <input type="text" id="id" name="user_id" value="" class="int id bg" title="아이디" placeholder="아이디" maxlength="20">
-                      <input type="password" id="pw" name="pw" class="int pw bg" title="비밀번호 입력" placeholder="비밀번호" maxlength="40">
+                      <input type="text" id="id" name="user_id" value="bar" class="int id bg" title="아이디" placeholder="아이디" maxlength="20">
+                      <input type="password" id="pw" name="pw" class="int pw bg" value="barpwd" title="비밀번호 입력" placeholder="비밀번호" maxlength="40">
                     </div>
-                    <button type="submit" class="btn_blue small btn_wfull">로그인</button>
+                    <button type="submit" class="btn_blue small btn_wfull" value="form login">로그인</button>
                   </fieldset>
                 </form>
               </div>
@@ -25,22 +26,51 @@
     </div>
   </main>
 </div>
+</div>
 </template>
 <script>
+import axios from 'axios'
 export default {
+  name: 'loginView',
+  props: {
+    msg: String
+  },
   components: {},
   data () {
     return {}
   },
   beforeCreate () {},
-  created () {},
+  created () {
+    axios.get('/login')
+      .then(function (response) {
+        console.log(response)
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  },
   beforeMount () {},
-  mounted () {},
+  mounted () {
+    this.load()
+  },
   beforeUpdate () {},
   updated () {},
   beforeUnmount () {},
   unmounted () {},
-  methods: {}
+  methods: {
+    load () {
+      this.axios.post('/api/auth/login').then(res => {
+        console.log(res.data)
+      })
+    },
+    submitBtn () {
+      this.$axios.post('/api/twitter/post', 'this is string').then(res => {
+        console.log(res)
+      }).catch(err => {
+        console.log(err)
+      })
+    }
+  }
 }
 </script>
 <style scope>
