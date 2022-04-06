@@ -73,21 +73,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.exceptionHandling()
 				.authenticationEntryPoint(new AjaxSupportAuthenticationEntryPoint(FORM_LOGIN_URL, API_URL))
 				.and()
-			.authorizeRequests()
-				.antMatchers(PERMIT_ALL_URLS).permitAll()
-				.antMatchers("/view/home/adminOnly", "/api/home/adminOnly").hasRole("ADMIN")
-				.antMatchers("/view/**", API_URL).authenticated()
-//				.antMatchers("/**").permitAll()
-				.anyRequest().authenticated()
-				.and()
-			.formLogin()
-				.loginPage(FORM_LOGIN_URL)
-				.usernameParameter(LOGIN_ID_PARAM).passwordParameter(LOGIN_PWD_PARAM)
-				.loginProcessingUrl("/login")
-				.defaultSuccessUrl(FORM_LOGIN_SUCC_URL, false)
-				.successHandler(loginSuccessHandler())
-				.failureHandler(loginFailureHandler())
-				.and()
+				/*
+				 * .authorizeRequests() .antMatchers(PERMIT_ALL_URLS).permitAll()
+				 * .antMatchers("/view/home/adminOnly", "/api/home/adminOnly").hasRole("ADMIN")
+				 * .antMatchers("/view/**", API_URL).authenticated() //
+				 * .antMatchers("/**").permitAll() .anyRequest().authenticated() .and()
+				 */
+				/*
+				 * .formLogin() .loginPage(FORM_LOGIN_URL)
+				 * .usernameParameter(LOGIN_ID_PARAM).passwordParameter(LOGIN_PWD_PARAM)
+				 * .loginProcessingUrl("/login") .defaultSuccessUrl(FORM_LOGIN_SUCC_URL, false)
+				 * .successHandler(loginSuccessHandler()) .failureHandler(loginFailureHandler())
+				 * .and()
+				 */
 			.logout()
 				.logoutSuccessUrl(FORM_LOGIN_URL);
 	}
