@@ -33,7 +33,7 @@ public class BoardService {
 	public List<BoardVO> searchBoardListByChild()  {
 		return dao.searchBoardListByChild();
 	}
-    public List<?> selectBoardList(PageVO param) throws Exception {
+    public List<BoardVO> selectBoardList(PageVO param) throws Exception {
     	return dao.selectBoardList(param);
     }
     public List<?> selectBoardListByNew(PageVO param) throws Exception {

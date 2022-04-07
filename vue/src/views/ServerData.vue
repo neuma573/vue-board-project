@@ -1,6 +1,6 @@
 <template>
 <div>
-  접속유저 : {{ sex }}
+  접속유저 : {{ test }}
 </div>
 </template>
 
@@ -10,7 +10,7 @@ import axios from 'axios'
 export default {
   data () {
     return {
-      sex: 'test_id'
+      test: 'test_id'
     }
   },
   setup () {},
@@ -26,7 +26,7 @@ export default {
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
-          this.sex = res.data
+          this.test = res.data
         })
         .catch((error) => {
           console.log(error)

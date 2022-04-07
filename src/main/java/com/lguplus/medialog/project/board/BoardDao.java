@@ -17,7 +17,7 @@ public interface BoardDao {
 	
 	public List<BoardVO> searchBoardListByChild();
 	
-    public List<?> selectBoardList(PageVO param);
+    public  List<BoardVO> selectBoardList(PageVO param);
     
     public List<?> selectBoardListByNew(PageVO param);
     
@@ -33,8 +33,8 @@ public interface BoardDao {
 	
 	public void updateBoardOrderDelete(Integer id);
 	
-		public void uploadFile(FileVO fileVO);
-	
+	public void uploadFile(FileVO fileVO);
+
 	public BoardVO getBoardDetail(Integer id);
 	
 	public void boardModifyRegist(BoardVO board);

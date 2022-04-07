@@ -8,7 +8,9 @@ import java.io.OutputStream;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -18,24 +20,31 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lguplus.medialog.project.common.utils.DownloadUtils;
 import com.lguplus.medialog.project.common.utils.SpringUtils;
 
 import lombok.Data;
 
-@Controller
+@CrossOrigin(origins = "http://localhost:8081")
+@RestController
 @Data
 @ConfigurationProperties("app.brd")
 @RequestMapping("/board")
@@ -51,26 +60,44 @@ public class BoardController {
 	BoardVO board;
 	PageVO pageVO;
 	
-	@ResponseBody
-	@RequestMapping(value = "get-board-list.do", method = RequestMethod.GET)
-	public String boardList(Model model) throws Exception {
-		logger.info("boardList");
-		pageVO.setDisplayRowCount(10);
+//	@GetMapping("")
+//	public List boardList(PageVO pageVO, Model model, HttpSession session) throws Exception {
+//		int pageNum = 33;
+//		pageVO.setDisplayRowCount(pageNum);
+//		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
+//		List<BoardVO> listview = svc.selectBoardList(pageVO);
+//		JSONObject listObj = new JSONObject();
+//		JSONArray list = new JSONArray();
+//		String userId = "123";
+//            
+//        model.addAttribute("userId",userId);
+//        logger.info(model.toString());
+//		return listview;
+//	}
+    @GetMapping("")
+    public Map<String, Object> boardList(PageVO pageVO, Model model, HttpSession session) throws Exception{
+    	Map<String, Object> data = new HashMap();
+    	String userId = "1234";
+		int pageNum = 10;
+		pageVO.setDisplayRowCount(pageNum);
 		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
-		List<?> listview;
-		if (session.getAttribute("pagingMethod") == "new") {
-			listview = svc.selectBoardListByNew(pageVO);
-		} else {
-			listview = svc.selectBoardList(pageVO);
-		}
-		model.addAttribute("list", listview);
-		model.addAttribute("pageVO", pageVO);
-		model.addAttribute("User", SpringUtils.getCurrentUserName());
-		logger.info("pageVO 정보 :: " + pageVO);
-		session.setAttribute("rowCalculate", pageVO.getTotRow()-pageVO.getRowStart());
-		session.setAttribute("currPage", pageVO.getPage());
-		return "board/board.empty";
+		List<BoardVO> listview = svc.selectBoardList(pageVO);
+    	data.put("boardList", listview);
+    	data.put("userId", userId);
+    	data.put("pageVO", pageVO);
+    	logger.info(session.toString());
+        return data;
+    }
+	/* 페이지에 표시할 게시글 수 세션에 넣기 */
+	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
+	public String setPageCnt(@RequestParam(value = "displayRowCount") Integer displayRowCount, HttpSession session) {
+		session.setAttribute("displayRowCount", displayRowCount);
+		logger.info("게시글 표시 갯수 ::" + displayRowCount);
+
+		return "redirect:/page/board";
 	}
+    
+	
 
 //	/* 페이지에 표시할 게시글 수 세션에 넣기 */
 //	@RequestMapping(value = "/setPageCnt")
