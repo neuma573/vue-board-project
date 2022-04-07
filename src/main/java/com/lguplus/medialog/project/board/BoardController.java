@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -90,11 +92,17 @@ public class BoardController {
     }
 	/* 페이지에 표시할 게시글 수 세션에 넣기 */
 	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
-	public String setPageCnt(@RequestParam(value = "displayRowCount") Integer displayRowCount, HttpSession session) {
-		session.setAttribute("displayRowCount", displayRowCount);
-		logger.info("게시글 표시 갯수 ::" + displayRowCount);
+	public void setPageCnt(@RequestBody HashMap<String, Object> requestJsonHashMap, HttpSession session) {
 
-		return "redirect:/page/board";
+
+		int rowData = (int) requestJsonHashMap.get("displayRowCount");
+		logger.info("제이슨을 받아왔는가? :"+rowData);
+		session.setAttribute("rowData", rowData);
+		
+		//		session.setAttribute("displayRowCount", displayRowCount);
+//		logger.info("게시글 표시 갯수 ::" + displayRowCount);
+//
+//		return "redirect:/page/board";
 	}
     
 	

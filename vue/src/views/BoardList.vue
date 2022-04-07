@@ -20,7 +20,7 @@
     <label><input type="radio" v-bind:value="sortByRegDt" v-model="sortType"> 생성순으로 정렬 </label>
             </div>
 <div class="right_box">
-<input type="number" v-model.number="pageVO.displayRowCount" /> <button type="button" @click="postDisplayRowCount">전송</button>
+<input type="number" v-model.number="rowData" /> <button type="button" @click="postDisplayRowCount">전송</button>
 </div>
         </div>
 
@@ -97,7 +97,8 @@ export default {
       selectChild: '자식선택',
       selectParents: '부모선택',
       boardSelectByLvl: [],
-      pageVO: []
+      pageVO: [],
+      rowData: ''
     }
   },
   beforeCreate () {},
@@ -128,9 +129,12 @@ export default {
         })
     },
     postDisplayRowCount () {
+      const rownum = {
+        displayRowCount: this.rowData
+      }
       axios
         .post('http://localhost:8080/board/setPageCnt',
-          this.pageVO.displayRowCount
+          rownum
         )
         .then((res) => {
           console.log(res.staus)
