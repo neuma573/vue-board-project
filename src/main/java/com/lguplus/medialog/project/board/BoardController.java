@@ -77,11 +77,20 @@ public class BoardController {
 //		return listview;
 //	}
     @GetMapping("")
-    public Map<String, Object> boardList(PageVO pageVO, Model model, HttpSession session) throws Exception{
+    public Map<String, Object> boardList(@RequestBody HashMap<String, Object> requestJsonHashMap, PageVO pageVO, HttpSession session) throws Exception{
+    	int rowData = 0;
+		try {
+    		rowData = (int) requestJsonHashMap.get("displayRowCount");
+    	}
+    	catch (Exception e) {
+    		rowData = 10;
+    	}
+		
     	Map<String, Object> data = new HashMap();
     	String userId = "1234";
-		int pageNum = 10;
-		pageVO.setDisplayRowCount(pageNum);
+    	pageVO.setDisplayRowCount(rowData);
+
+    	
 		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
 		List<BoardVO> listview = svc.selectBoardList(pageVO);
     	data.put("boardList", listview);
@@ -90,21 +99,23 @@ public class BoardController {
     	logger.info(session.toString());
         return data;
     }
+
 	/* 페이지에 표시할 게시글 수 세션에 넣기 */
 	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
-	public void setPageCnt(@RequestBody HashMap<String, Object> requestJsonHashMap, HttpSession session) {
-
-
+	 public Map<String, Object> setPageCnt(@RequestBody HashMap<String, Object> requestJsonHashMap, HttpSession session, PageVO pageVO) throws Exception {
 		int rowData = (int) requestJsonHashMap.get("displayRowCount");
-		logger.info("제이슨을 받아왔는가? :"+rowData);
-		session.setAttribute("rowData", rowData);
-		
-		//		session.setAttribute("displayRowCount", displayRowCount);
-//		logger.info("게시글 표시 갯수 ::" + displayRowCount);
-//
-//		return "redirect:/page/board";
-	}
-    
+    	Map<String, Object> data = new HashMap();
+    	String userId = "1234";
+    	logger.info(pageVO.toString());
+    	pageVO.setDisplayRowCount(rowData);
+		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
+		List<BoardVO> listview = svc.selectBoardList(pageVO);
+    	data.put("boardList", listview);
+    	data.put("userId", userId);
+    	data.put("pageVO", pageVO);
+    	logger.info(session.toString());
+        return data;
+    }
 	
 
 //	/* 페이지에 표시할 게시글 수 세션에 넣기 */

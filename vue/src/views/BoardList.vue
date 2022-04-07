@@ -45,7 +45,7 @@
         <tr :key="i" v-for="(board, i) in boardList">
             <td class="board_num"> {{ i+1 }} </td>
             <td class="board_title">
-                <a href="/boardview">{{ board.brdTitle }}</a>
+                <a href="javascript:;">{{ board.brdTitle }}</a>
                 <a class="reply_cnt" href="#">
                     <span class="reply_num">[{{ board.brdReCnt }}]
                     </span>
@@ -59,11 +59,14 @@
             <td>{{ board.brdHit }}
             </td>
           </tr>
+<tr v-if="boardList.length == 0">
+<td colspan="4">데이터가 없습니다.</td>
+</tr>
     </tbody>
 </table>
         <div class="wrap_button">
             <div class="button_group">
-              <button type="button" class="off">글쓰기</button>
+              <button a @click="fnAdd" class="off">글쓰기</button>
             </div>
         </div>
 
@@ -98,28 +101,44 @@ export default {
       selectParents: '부모선택',
       boardSelectByLvl: [],
       pageVO: [],
-      rowData: ''
+      rowData: '',
+      keyword: ''
     }
   },
   beforeCreate () {},
   created () {
-    this.getData()
+    this.paging()
   },
-  beforeMount () {},
-  mounted () {},
+  beforeMount () {
+    this.paging()
+  },
+  mounted () {
+    this.getData()
+    this.paging()
+  },
   beforeUpdate () {},
   updated () {},
   beforeUnmount () {},
   unmounted () {},
   methods: {
-    getData () {
+    paging () {
+      this.pageVO.displayRowCount = this.$session.get('displayRowCount').displayRowCount
+    },
+    getData (displayRowCount) {
+      displayRowCount = this.$session.get('displayRowCount').displayRowCount
       axios
-        .get('http://localhost:8080/board')
+        .get('http://localhost:8080/board',
+          displayRowCount)
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
           this.boardList = res.data.boardList
+          this.userId = res.data.userId
           this.pageVO = res.data.pageVO
+          this.pageVO.displayRowCount = this.$session.get('displayRowCount').displayRowCount
+          console.log(this.$session.get('displayRowCount').displayRowCount)
+          console.log('겟액션')
+          this.paging()
         })
         .catch((error) => {
           console.log(error)
@@ -137,8 +156,13 @@ export default {
           rownum
         )
         .then((res) => {
-          console.log(res.staus)
-          console.log(res.data)
+          this.boardList = res.data.boardList
+          this.userId = res.data.userId
+          this.pageVO = res.data.pageVO
+          this.$session.set('displayRowCount', rownum)
+          console.log(this.$session.get('displayRowCount').displayRowCount)
+          console.log('포스트액션')
+          this.paging()
         })
         .catch((error) => {
           console.log(error)
@@ -146,6 +170,9 @@ export default {
         .finally(() => {
           console.log('항상 마지막에 실행')
         })
+    },
+    fnAdd () {
+      this.$router.push('/board/write')
     }
 
   }
