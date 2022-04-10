@@ -45,7 +45,7 @@ import com.lguplus.medialog.project.common.utils.SpringUtils;
 
 import lombok.Data;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "http://localhost:8090")
 @RestController
 @Data
 @ConfigurationProperties("app.brd")
@@ -61,7 +61,7 @@ public class BoardController {
 	HttpSession session;
 	BoardVO board;
 	PageVO pageVO;
-	
+	String userId = "1234";
 //	@GetMapping("")
 //	public List boardList(PageVO pageVO, Model model, HttpSession session) throws Exception {
 //		int pageNum = 33;
@@ -77,44 +77,39 @@ public class BoardController {
 //		return listview;
 //	}
     @GetMapping("")
-    public Map<String, Object> boardList(@RequestBody HashMap<String, Object> requestJsonHashMap, PageVO pageVO, HttpSession session) throws Exception{
-    	int rowData = 0;
-		try {
-    		rowData = (int) requestJsonHashMap.get("displayRowCount");
-    	}
-    	catch (Exception e) {
-    		rowData = 10;
-    	}
-		
+    public Map<String, Object> boardList(PageVO pageVO, HttpSession session) throws Exception{
     	Map<String, Object> data = new HashMap();
     	String userId = "1234";
-    	pageVO.setDisplayRowCount(rowData);
-
-    	
+    	pageVO.setDisplayRowCount(10);
 		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
 		List<BoardVO> listview = svc.selectBoardList(pageVO);
+    	this.pageVO = pageVO;
     	data.put("boardList", listview);
     	data.put("userId", userId);
     	data.put("pageVO", pageVO);
     	logger.info(session.toString());
+    	logger.info(pageVO.toString());
         return data;
     }
 
 	/* 페이지에 표시할 게시글 수 세션에 넣기 */
-	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
+	@RequestMapping(value = "/setpagenum", method = RequestMethod.POST)
 	 public Map<String, Object> setPageCnt(@RequestBody HashMap<String, Object> requestJsonHashMap, HttpSession session, PageVO pageVO) throws Exception {
-		int rowData = (int) requestJsonHashMap.get("displayRowCount");
     	Map<String, Object> data = new HashMap();
-    	String userId = "1234";
-    	logger.info(pageVO.toString());
-    	pageVO.setDisplayRowCount(rowData);
+		int pageNum = (int) requestJsonHashMap.get("pageNum");
+		logger.info("넘어온정보"+pageNum);
+		pageVO.setPage(pageNum);
 		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
 		List<BoardVO> listview = svc.selectBoardList(pageVO);
+		this.pageVO = pageVO;
     	data.put("boardList", listview);
     	data.put("userId", userId);
     	data.put("pageVO", pageVO);
     	logger.info(session.toString());
-        return data;
+    	logger.info(pageVO.toString());
+		
+    	return data;
+        
     }
 	
 
@@ -172,27 +167,23 @@ public class BoardController {
 //		return "board/board.empty";
 //	}
 //
-//	/* 게시판 게시글 디테일 */
-//	@GetMapping("boardView")
-//	public String openBoardDetail(@RequestParam Integer id, Model model, HttpServletRequest request,
-//			HttpServletResponse response) throws Exception {
-//		List<ReplyVO> list = svc.openCommentList(id);
-//		FileVO listview = svc.getFileList(id);
-//		model.addAttribute("listview", listview);
-//		model.addAttribute("list", list);
-//
-//		if (viewCntByCookie) {
-//			viewCountUp(id, request, response);
-//		} else {
-//			svc.boardViewUpdate(id);
-//		}
-//		BoardVO board = svc.getBoardDetail(id);
-//		model.addAttribute("board", board);
-//		this.board = board;
-//		logger.info("BoardVO정보: " + board);
-//		return "board/view.empty";
-//
-//	}
+	/* 게시판 게시글 디테일 */
+	@GetMapping("boardView")
+	public  Map<String, Object> openBoardDetail(@RequestParam Integer id, Model model, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+    	Map<String, Object> data = new HashMap();
+		List<ReplyVO> list = svc.openCommentList(id);
+		FileVO listview = svc.getFileList(id);
+		model.addAttribute("listview", listview);
+		model.addAttribute("list", list);
+
+		BoardVO board = svc.getBoardDetail(id);
+		model.addAttribute("board", board);
+		this.board = board;
+		logger.info("BoardVO정보: " + board);
+		return data;
+
+	}
 //
 //	
 //	private void viewCountUp(Integer id, HttpServletRequest request, HttpServletResponse response) {
@@ -298,15 +289,17 @@ public class BoardController {
 //	}
 //
 //	/* 게시판 글쓰기 */
-//	@RequestMapping(value = "/boardWriteRegist", method = RequestMethod.POST)
-//	public String uploadBoard(BoardVO board, @RequestParam(required = false) MultipartFile uploadFile, FileVO fileVO,
-//			@RequestParam(required = false) String action, @RequestParam(required = false) Integer brdDepth,
-//			@RequestParam(required = false) Integer brdNo) throws Exception {
-//		board.setBrdWriter(SpringUtils.getCurrentUser().getUserId());
-//		String formatDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+	@RequestMapping(value = "/boardpost", method = RequestMethod.POST)
+	public void uploadBoard(@RequestBody HashMap<String, Object> requestJsonHashMap, BoardVO board) throws Exception {
+		board.setBrdWriter(SpringUtils.getCurrentUser().getUserId());
+    	board.setBrdWriter((String) requestJsonHashMap.get("brdWriter"));
+    	board.setBrdTitle((String) requestJsonHashMap.get("brdTitle"));
+    	board.setBrdContent((String) requestJsonHashMap.get("brdContent"));
+		logger.info(board.toString());
+		String formatDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
 //		switch (action) {
 //		case "write":
-//			svc.uploadBoard(board);
+			svc.uploadBoard(board);
 //			break;
 //		case "reply":
 //			svc.uploadBoard(board);
@@ -325,9 +318,8 @@ public class BoardController {
 //			logger.info("파일명 : " + uploadFile.getOriginalFilename());
 //			uploadFile(fileVO, uploadFile, board);
 //		}
-//		return "redirect:/page/board";
-//	}
-//
+	}
+
 //	/* 파일업로드 */
 //	public void uploadFile(FileVO fileVO, MultipartFile uploadFile, BoardVO board) throws IOException {
 //		String originalFileExtension = uploadFile.getOriginalFilename()

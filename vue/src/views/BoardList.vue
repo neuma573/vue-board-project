@@ -45,7 +45,7 @@
         <tr :key="i" v-for="(board, i) in boardList">
             <td class="board_num"> {{ i+1 }} </td>
             <td class="board_title">
-                <a href="javascript:;">{{ board.brdTitle }}</a>
+                <a @click="getDetail(i)">{{ board.brdTitle }}</a>
                 <a class="reply_cnt" href="#">
                     <span class="reply_num">[{{ board.brdReCnt }}]
                     </span>
@@ -73,7 +73,7 @@
 <div v-show="pageVO.totPage>1" class="bottom_paging_wrap">
 <div class="bottom_paging_box iconpaging">
 <a v-show="pageVO.hasPrev" href="#" class="sp_pagingicon">☜</a>
-        <a :key="i" v-for="(pageVO, i) in (pageVO.pageStart, pageVO.pageEnd)">{{ i+1 }}</a>
+        <a :key="i" v-for="(pageVO, i) in (pageVO.pageStart, pageVO.pageEnd)" @click="getPage(i)">{{ i+1 }}</a>
 </div>
 </div>
 </article>
@@ -102,41 +102,31 @@ export default {
       boardSelectByLvl: [],
       pageVO: [],
       rowData: '',
-      keyword: ''
+      keyword: '',
+      pageNum: ''
     }
   },
   beforeCreate () {},
   created () {
-    this.paging()
-  },
-  beforeMount () {
-    this.paging()
-  },
-  mounted () {
     this.getData()
-    this.paging()
   },
+  beforeMount () {},
+  mounted () {},
   beforeUpdate () {},
   updated () {},
   beforeUnmount () {},
   unmounted () {},
   methods: {
-    paging () {
-      this.pageVO.displayRowCount = this.$session.get('displayRowCount').displayRowCount
-    },
-    getData (displayRowCount) {
-      displayRowCount = this.$session.get('displayRowCount').displayRowCount
+
+    getData () {
       axios
-        .get('http://localhost:8080/board',
-          displayRowCount)
+        .get('http://localhost:8080/board')
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
           this.boardList = res.data.boardList
           this.userId = res.data.userId
           this.pageVO = res.data.pageVO
-          this.pageVO.displayRowCount = this.$session.get('displayRowCount').displayRowCount
-          console.log(this.$session.get('displayRowCount').displayRowCount)
           console.log('겟액션')
           this.paging()
         })
@@ -147,21 +137,17 @@ export default {
           console.log('항상 마지막에 실행')
         })
     },
-    postDisplayRowCount () {
-      const rownum = {
-        displayRowCount: this.rowData
-      }
+    getPage () {
+      console.log(this.i)
       axios
-        .post('http://localhost:8080/board/setPageCnt',
-          rownum
-        )
+        .post('http://localhost:8080/board/setpagenum', this.i)
         .then((res) => {
+          console.log(res.staus)
+          console.log(res.data)
           this.boardList = res.data.boardList
           this.userId = res.data.userId
           this.pageVO = res.data.pageVO
-          this.$session.set('displayRowCount', rownum)
-          console.log(this.$session.get('displayRowCount').displayRowCount)
-          console.log('포스트액션')
+          console.log('겟액션')
           this.paging()
         })
         .catch((error) => {

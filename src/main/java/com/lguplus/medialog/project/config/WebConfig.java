@@ -3,6 +3,7 @@ package com.lguplus.medialog.project.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
@@ -10,9 +11,13 @@ import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-
-
-	
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+        	.allowedOrigins("*")
+        	.allowedMethods("GET", "POST");
+    }
+}
 //	@Bean
 //	public CommonsMultipartResolver multipartResolver() {
 //		CommonsMultipartResolver resolver = new CommonsMultipartResolver();
@@ -34,5 +39,5 @@ public class WebConfig implements WebMvcConfigurer {
 //    public HandlerInterceptor lnbInterceptor() {
 //    	return new LnbInterceptor();
 //    }
-
-}
+//
+//}
