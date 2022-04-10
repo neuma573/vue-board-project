@@ -29,6 +29,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -109,7 +110,7 @@ public class BoardController {
     	return data;
         
     }
-=======
+
 	/* 페이지에 표시할 게시글 수 세션에 넣기 */
 	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
 	public String setPageCnt(@RequestParam(value = "displayRowCount") Integer displayRowCount, HttpSession session) {
@@ -118,7 +119,7 @@ public class BoardController {
 
 		return "redirect:/page/board";
 	}
-    
+
 	
 
 //	/* 페이지에 표시할 게시글 수 세션에 넣기 */

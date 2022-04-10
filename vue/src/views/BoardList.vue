@@ -100,14 +100,10 @@ export default {
       selectChild: '자식선택',
       selectParents: '부모선택',
       boardSelectByLvl: [],
-<<<<<<< HEAD
       pageVO: [],
       rowData: '',
       keyword: '',
       pageNum: ''
-=======
-      pageVO: []
->>>>>>> parent of 1084e92 (axios post 성공)
     }
   },
   beforeCreate () {},
@@ -141,18 +137,17 @@ export default {
           console.log('항상 마지막에 실행')
         })
     },
-<<<<<<< HEAD
+
     getPage () {
       console.log(this.i)
       axios
         .post('http://localhost:8080/board/setpagenum', this.i)
-=======
     postDisplayRowCount () {
       axios
         .post('http://localhost:8080/board/setPageCnt',
           this.pageVO.displayRowCount
         )
->>>>>>> parent of 1084e92 (axios post 성공)
+
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
