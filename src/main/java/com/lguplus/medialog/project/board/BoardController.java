@@ -89,7 +89,6 @@ public class BoardController {
     	logger.info(pageVO.toString());
         return data;
     }
-<<<<<<< HEAD
 
 	/* 페이지에 표시할 게시글 수 세션에 넣기 */
 	@RequestMapping(value = "/setpagenum", method = RequestMethod.POST)
@@ -120,7 +119,6 @@ public class BoardController {
 		return "redirect:/page/board";
 	}
     
->>>>>>> parent of 1084e92 (axios post 성공)
 	
 
 //	/* 페이지에 표시할 게시글 수 세션에 넣기 */
