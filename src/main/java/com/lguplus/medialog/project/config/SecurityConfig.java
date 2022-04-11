@@ -22,6 +22,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 //import com.lguplus.medialog.project.base.auth.extra.CustomAuthenticationFilter;
 //import com.lguplus.medialog.project.base.auth.extra.CustomUserDetailsAuthenticationProvider;
@@ -39,6 +40,7 @@ import com.lguplus.medialog.project.config.consts.AppSettings;
  */
 @Configuration
 @EnableWebSecurity
+@CrossOrigin(origins = "http://localhost:8081")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private static final String API_URL = "/api/**";
 	private static final String[] PERMIT_ALL_URLS = {FORM_LOGIN_URL, LOGIN_API_URL, "/api/public/**", "/view/public/**"};
@@ -73,19 +75,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.exceptionHandling()
 				.authenticationEntryPoint(new AjaxSupportAuthenticationEntryPoint(FORM_LOGIN_URL, API_URL))
 				.and()
-				/*
-				 * .authorizeRequests() .antMatchers(PERMIT_ALL_URLS).permitAll()
-				 * .antMatchers("/view/home/adminOnly", "/api/home/adminOnly").hasRole("ADMIN")
-				 * .antMatchers("/view/**", API_URL).authenticated() //
-				 * .antMatchers("/**").permitAll() .anyRequest().authenticated() .and()
-				 */
-				/*
-				 * .formLogin() .loginPage(FORM_LOGIN_URL)
-				 * .usernameParameter(LOGIN_ID_PARAM).passwordParameter(LOGIN_PWD_PARAM)
-				 * .loginProcessingUrl("/login") .defaultSuccessUrl(FORM_LOGIN_SUCC_URL, false)
-				 * .successHandler(loginSuccessHandler()) .failureHandler(loginFailureHandler())
-				 * .and()
-				 */
+				
+				  .authorizeRequests() .antMatchers(PERMIT_ALL_URLS).permitAll()
+				  .antMatchers("/view/home/adminOnly", "/api/home/adminOnly").hasRole("ADMIN")
+				  .antMatchers("/view/**", API_URL).authenticated() //
+				  .antMatchers("/**").permitAll() .anyRequest().authenticated() .and()
+
+				  .formLogin() .loginPage(FORM_LOGIN_URL)
+				  .usernameParameter(LOGIN_ID_PARAM).passwordParameter(LOGIN_PWD_PARAM)
+				  .loginProcessingUrl("/login") .defaultSuccessUrl(FORM_LOGIN_SUCC_URL, false)
+				  .successHandler(loginSuccessHandler()) .failureHandler(loginFailureHandler())
+				  .and()
+				 
 			.logout()
 				.logoutSuccessUrl(FORM_LOGIN_URL);
 	}

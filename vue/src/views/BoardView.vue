@@ -3,69 +3,61 @@
     <tr>
         <td>게시글ID</td>
         <td>
-            <c:out value="${board.brdNo}" />
+            {{boardVO.brdNo}}
         </td>
     </tr>
     <tr>
         <td>작성일</td>
         <td>
-            <c:out value="${board.brdRegDt}" />
+            {{boardVO.brdRegDt}}
         </td>
     </tr>
     <tr>
         <td>작성자</td>
         <td>
-            <c:out value="${board.brdWriter}" />
+            {{boardVO.brdWriter}}
         </td>
     </tr>
     <tr>
         <td>조회수</td>
         <td>
-            <c:out value="${board.brdHit}" />
+            {{boardVO.brdHit}}
         </td>
+    </tr>
     <tr>
         <td>제목</td>
         <td>
-            <c:out value="${board.brdTitle}" />
+            {{boardVO.brdTitle}}
         </td>
     </tr>
 
     <tr>
         <td>내용</td>
         <td>
-
+             {{ boardVO.brdContent }}
 
         </td>
     </tr>
     <tr>
         <td>첨부파일</td>
         <td>
-            <c:if test="${!empty listview.fileRandomNo}">
-                <form action="/page/board/fileDownload" method="post">
+            <div v-if="file!=null">
+                <form action="/board/fileDownload" method="post">
                     파일이름:
-                    <c:out value="${listview.fileRealName}" /> 크기:
-                    <c:out value="${listview.fileSize}" /> byte
-                    <input name="fileRandomNo" type="hidden" value="${listview.fileRandomNo}">
-                    <input name="brdNo" type="hidden" value="${board.brdNo}">
-                    <input type="submit" value="버튼">
+                    {{file.fileRealName}} 크기:
+                    {{file.fileSize}} byte
+                    <input name="fileRandomNo" type="hidden" v-model="file.fileRandomNo">
+                    <input name="brdNo" type="hidden" v-model="boardVO.brdNo">
+                    <input type="submit" value="버튼" @click="fnDownload">
                 </form>
-
-
-
-            </c:if>
+            </div>
             <br />
-
-
-
         </td>
     </tr>
-
-
-
 </table>
 <table style="width: 900px;">
     <th>
-        <form action="/page/board/boardWrite" method="post">
+        <form action="#" method="post">
             <input type="hidden" value="modify" name="action" />
             <input type="hidden" value="${board.brdNo}" name="id" />
             <input type="submit" value="수정" />
@@ -83,15 +75,14 @@
         <button id="delete" onclick="location.href='boardDelete?id=${board.brdNo}'">삭제</button>
     </th>
     <th>
-        <a href="/page/board">돌아가기</button></a>
+        <a href="/board">돌아가기</a>
     </th>
 </table>
 <hr style="width: 900px; float:left;" />
 <!-- 게시글 본문 끝 -->
 <br>
-
 <!-- 댓글 리스트 영역 -->
-<c:forEach var="li" items="${list}" varStatus="status">
+<!-- <c:forEach var="li" items="${list}" varStatus="status">
     <div style="border: 1px solid gray; width: 900px; padding: 5px; margin-top: 5px;
                   margin-left: <c:out value=" ${20*li.reDepth}" />px; display: inline-block">
     <c:out value="${li.reWriter}" />
@@ -100,24 +91,10 @@
     <a id="reply" href='/page/board/commentReply?id=${li.reNo}&bid=${board.brdNo}'>답글</a>
     <br />
     <c:out value="${li.reContent}" escapeXml="false" />
-
-
     </div>
-
-
     <br />
-</c:forEach>
-
-
-
-
-
-
-
+</c:forEach> -->
 <!-- 댓글 리스트 끝 -->
-
-
-
 <!-- 댓글 입력 영역 -->
 <div style="border: 1px solid gray; width: 900px; padding: 5px; margin-top: 5px;
          display: inline-block">
@@ -125,32 +102,52 @@
         <input TYPE="hidden" NAME="reBrdNo" SIZE=10 value='<c:out value="${board.brdNo}" />'>
         <div class="form-group">
         </div>
-
         <textarea class="form-control" rows="5" cols="70" id="reContent" name="reContent" placeholder="댓글입력"
             required="required"></textarea>
         <button type="submit">등록</button>
     </form>
 </div>
-
-
-
-
-
-
-</div>
 </template>
 <script>
+import axios from 'axios'
 export default {
   components: {},
- data () {
+  data () {
     return {
-      brdWriter : '',
-      brdTitle : '',
-      brdContent : '테스트 내용'
+      boardVO: {
+        brdNo: '-1',
+        brdWriter: 'unknown_user',
+        brdTitle: 'unknow_title',
+        brdOrigin: '-1',
+        brdParents: '-1',
+        brdDepth: '-1',
+        brdOrder: '-1',
+        brdContent: 'unknown_textarea',
+        brdRegDt: '2022-04-11 00:00:00.000',
+        brdHit: '-1',
+        brdReCnt: '-1'
+      },
+      rePlyList: [
+        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0' },
+        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0' },
+        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0' }
+      ],
+      id:
+        { id: '' },
+      file: [
+        {
+          fileName: '', fileNo: '', fileRandomNo: '', fileRealName: '', fileSize: '', fileBrdNo: ''
+        }
+      ]
+
     }
- },
+  },
   beforeCreate () {},
-  created () {},
+  created () {
+    console.log(this.$route.params.id)
+    this.id.id = this.$route.params.id
+    this.getBoardDetail(this.id.id)
+  },
   beforeMount () {},
   mounted () {},
   beforeUpdate () {},
@@ -158,50 +155,51 @@ export default {
   beforeUnmount () {},
   unmounted () {},
   methods: {
-
-
+    getBoardDetail (parameter) {
+      console.info(parameter)
+      axios
+        .get('http://localhost:8080/board/boardview?id=' + parameter)
+        .then((res) => {
+          console.log(res.staus)
+          console.log(res.data)
+          this.boardVO = res.data.boardVO
+          this.rePlyList = res.data.rePlyList
+          this.pageVO = res.data.pageVO
+          this.file = res.data.file
+          console.log('겟액션')
+          this.paging()
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+        .finally(() => {
+          console.log('항상 마지막에 실행')
+        })
+    },
+    fnDownload () {
+      this.file.fileBrdNo = this.boardVO.brdNo
+      axios
+        .post('http://localhost:8080/board/fileDownload', this.file)
+        .then((res) => {
+          console.log(res.staus)
+          console.log(res.data)
+          this.boardList = res.data.boardList
+          this.userId = res.data.userId
+          this.pageVO = res.data.pageVO
+          console.log('겟액션')
+          this.paging()
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+        .finally(() => {
+          console.log('항상 마지막에 실행')
+        })
+      this.$router.push('/board')
+    }
   }
 }
 </script>
 <style scope>
-.gallview_head {
-    margin: 16px 0 29px;
-    padding-bottom: 11px;
-    border-bottom: 1px solid #eee;
-}
-사용자 에이전트 스타일시트
-div {
-    display: block;
-}
-.view_content_wrap {
-    font-family: -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",arial,굴림,Gulim,sans-serif;
-    font-size: 13px;
-    color: #333;
-}
-body, button, input, select, table, textarea {
-    font-size: 12px;
-    font-family: -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",arial,Dotum,돋움,sans-serif;
-}
-.clear:after {
-    clear: both;
-    display: block;
-    visibility: hidden;
-    content: "";
-}
-.gallview_contents {
-    line-height: 22px;
-}
-사용자 에이전트 스타일시트
-div {
-    display: block;
-}
-.view_content_wrap {
-    font-family: -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",arial,굴림,Gulim,sans-serif;
-    font-size: 13px;
-    color: #333;
-}
-body, button, input, select, table, textarea {
-    font-size: 12px;
-    font-family: -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",arial,Dotum,돋움,sans-serif;
-}
+
 </style>

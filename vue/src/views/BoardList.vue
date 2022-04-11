@@ -43,9 +43,9 @@
     </thead>
     <tbody>
         <tr :key="i" v-for="(board, i) in boardList">
-            <td class="board_num"> {{ i+1 }} </td>
+            <td class="board_num"> {{ pageVO.displayRowCount * (pageVO.page-1)+i+1 }} </td>
             <td class="board_title">
-                <a @click="getDetail(i)">{{ board.brdTitle }}</a>
+                <a @click="fnDetail(board.brdNo)">{{ board.brdTitle }}</a>
                 <a class="reply_cnt" href="#">
                     <span class="reply_num">[{{ board.brdReCnt }}]
                     </span>
@@ -73,7 +73,7 @@
 <div v-show="pageVO.totPage>1" class="bottom_paging_wrap">
 <div class="bottom_paging_box iconpaging">
 <a v-show="pageVO.hasPrev" href="#" class="sp_pagingicon">☜</a>
-        <a :key="i" v-for="(pageVO, i) in (pageVO.pageStart, pageVO.pageEnd)" @click="getPage(i)">{{ i+1 }}</a>
+        <a :key="i" v-for="(pageVO, i) in (pageVO.pageStart, pageVO.pageEnd)" @click="getPage(i+1)">{{ i+1 }}</a>
 </div>
 </div>
 </article>
@@ -92,9 +92,9 @@ export default {
       sortByRegDt: '게시글 최신순 정렬',
       userId: '',
       boardList: [
-        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0' },
-        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0' },
-        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0' }
+        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0', brdNo: '-1' },
+        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0', brdNo: '-1' },
+        { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0', brdNo: '-1' }
       ],
       sortType: '게시글 계층 정렬',
       selectChild: '자식선택',
@@ -108,7 +108,11 @@ export default {
   },
   beforeCreate () {},
   created () {
-    this.getData()
+    let a = 1
+    console.log(a)
+    a = this.$route.params.page
+    console.log(a)
+    this.getData(a)
   },
   beforeMount () {},
   mounted () {},
@@ -118,9 +122,10 @@ export default {
   unmounted () {},
   methods: {
 
-    getData () {
+    getData (parameter) {
+      console.log(parameter)
       axios
-        .get('http://localhost:8080/board')
+        .get('http://localhost:8080/board?page=' + parameter)
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
@@ -128,7 +133,6 @@ export default {
           this.userId = res.data.userId
           this.pageVO = res.data.pageVO
           console.log('겟액션')
-          this.paging()
         })
         .catch((error) => {
           console.log(error)
@@ -137,35 +141,33 @@ export default {
           console.log('항상 마지막에 실행')
         })
     },
-
-    getPage () {
-      console.log(this.i)
-      axios
-        .post('http://localhost:8080/board/setpagenum', this.i)
-    postDisplayRowCount () {
-      axios
-        .post('http://localhost:8080/board/setPageCnt',
-          this.pageVO.displayRowCount
-        )
-
-        .then((res) => {
-          console.log(res.staus)
-          console.log(res.data)
-          this.boardList = res.data.boardList
-          this.userId = res.data.userId
-          this.pageVO = res.data.pageVO
-          console.log('겟액션')
-          this.paging()
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-        .finally(() => {
-          console.log('항상 마지막에 실행')
-        })
+    getPage (i) {
+      console.log(i)
+      this.getData(i)
+      this.$router.push(
+        {
+          name: 'boardListPaging',
+          params:
+        {
+          page: i
+        }
+        }
+      )
     },
     fnAdd () {
       this.$router.push('/board/write')
+    },
+    fnDetail (index) {
+      console.log(index)
+      this.$router.push(
+        {
+          name: 'boardview',
+          params:
+        {
+          id: index
+        }
+        }
+      )
     }
 
   }

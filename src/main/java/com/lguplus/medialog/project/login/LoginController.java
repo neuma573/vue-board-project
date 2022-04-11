@@ -1,5 +1,7 @@
 package com.lguplus.medialog.project.login;
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -17,8 +19,10 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lguplus.medialog.project.base.auth.AuthPostProcessor;
@@ -30,6 +34,7 @@ import com.lguplus.medialog.project.config.consts.Const;
 import com.lguplus.medialog.project.config.consts.ResultCode;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:8081")
 public class LoginController {
 	private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 	
@@ -50,8 +55,13 @@ public class LoginController {
 	 * https://tech.junhabaek.net/spring-security-usernamepasswordauthenticationfilter의-더-깊은-이해-8b5927dbc037
 	 */
 	@PostMapping("/api/auth/login")
-	public RestResult<?> login(User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public RestResult<?> login(@RequestBody HashMap<String, Object> requestJsonHashMap, User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 //		UsernamePasswordAuthenticationToken token = new CustomAuthenticationToken(user.getUsername(), user.getPassword(), user.getUserDomain());
+		logger.info(user.toString());
+		logger.info(requestJsonHashMap.toString());
+    	user.setUserId(requestJsonHashMap.get("userId").toString());
+    	user.setUserDomain(requestJsonHashMap.get("domain").toString());
+    	user.setUserPwd(requestJsonHashMap.get("userPwd").toString());
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
         Authentication authentication = null;
 

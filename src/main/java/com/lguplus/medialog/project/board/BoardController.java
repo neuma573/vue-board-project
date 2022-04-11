@@ -28,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +45,7 @@ import com.lguplus.medialog.project.common.utils.SpringUtils;
 
 import lombok.Data;
 
-@CrossOrigin(origins = "http://localhost:8090")
+@CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @Data
 @ConfigurationProperties("app.brd")
@@ -60,7 +61,7 @@ public class BoardController {
 	HttpSession session;
 	BoardVO board;
 	PageVO pageVO;
-	String userId = "1234";
+	String userId = SpringUtils.getCurrentUserName();
 //	@GetMapping("")
 //	public List boardList(PageVO pageVO, Model model, HttpSession session) throws Exception {
 //		int pageNum = 33;
@@ -76,9 +77,14 @@ public class BoardController {
 //		return listview;
 //	}
     @GetMapping("")
-    public Map<String, Object> boardList(PageVO pageVO, HttpSession session) throws Exception{
+    public Map<String, Object> boardList(@RequestParam(value = "page", required = false) Integer id, PageVO pageVO, HttpSession session) throws Exception{
+    	
+    	if(id==null) {
+    		id=1;
+    	}logger.info("받아온 페이지넘버"+id.toString());
     	Map<String, Object> data = new HashMap();
-    	String userId = "1234";
+    	String userId =SpringUtils.getCurrentUserName();
+    	pageVO.setPage(id);
     	pageVO.setDisplayRowCount(10);
 		pageVO.pageCalculate(svc.selectBoardCount(pageVO));
 		List<BoardVO> listview = svc.selectBoardList(pageVO);
@@ -92,7 +98,7 @@ public class BoardController {
     }
 
 	/* 페이지에 표시할 게시글 수 세션에 넣기 */
-	@RequestMapping(value = "/setpagenum", method = RequestMethod.POST)
+	@GetMapping(value = "/setpagenum")
 	 public Map<String, Object> setPageCnt(@RequestBody HashMap<String, Object> requestJsonHashMap, HttpSession session, PageVO pageVO) throws Exception {
     	Map<String, Object> data = new HashMap();
 		int pageNum = (int) requestJsonHashMap.get("pageNum");
@@ -111,14 +117,14 @@ public class BoardController {
         
     }
 
-	/* 페이지에 표시할 게시글 수 세션에 넣기 */
-	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
-	public String setPageCnt(@RequestParam(value = "displayRowCount") Integer displayRowCount, HttpSession session) {
-		session.setAttribute("displayRowCount", displayRowCount);
-		logger.info("게시글 표시 갯수 ::" + displayRowCount);
-
-		return "redirect:/page/board";
-	}
+//	/* 페이지에 표시할 게시글 수 세션에 넣기 */
+//	@RequestMapping(value = "/setPageCnt", method = RequestMethod.POST)
+//	public String setPageCnt(@RequestParam(value = "displayRowCount") Integer displayRowCount, HttpSession session) {
+//		session.setAttribute("displayRowCount", displayRowCount);
+//		logger.info("게시글 표시 갯수 ::" + displayRowCount);
+//
+//		return "redirect:/page/board";
+//	}
 
 	
 
@@ -177,17 +183,16 @@ public class BoardController {
 //	}
 //
 	/* 게시판 게시글 디테일 */
-	@GetMapping("boardView")
-	public  Map<String, Object> openBoardDetail(@RequestParam Integer id, Model model, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+	@GetMapping("/boardview")
+	public  Map<String, Object> openBoardDetailget(@RequestParam(value = "id") int id) throws Exception {
     	Map<String, Object> data = new HashMap();
 		List<ReplyVO> list = svc.openCommentList(id);
 		FileVO listview = svc.getFileList(id);
-		model.addAttribute("listview", listview);
-		model.addAttribute("list", list);
-
 		BoardVO board = svc.getBoardDetail(id);
-		model.addAttribute("board", board);
+		svc.boardViewUpdate(id);
+    	data.put("replyList", list);
+    	data.put("boardVO", board);
+    	data.put("file", listview);
 		this.board = board;
 		logger.info("BoardVO정보: " + board);
 		return data;
@@ -300,7 +305,7 @@ public class BoardController {
 //	/* 게시판 글쓰기 */
 	@RequestMapping(value = "/boardpost", method = RequestMethod.POST)
 	public void uploadBoard(@RequestBody HashMap<String, Object> requestJsonHashMap, BoardVO board) throws Exception {
-		board.setBrdWriter(SpringUtils.getCurrentUser().getUserId());
+		logger.info(requestJsonHashMap.toString());
     	board.setBrdWriter((String) requestJsonHashMap.get("brdWriter"));
     	board.setBrdTitle((String) requestJsonHashMap.get("brdTitle"));
     	board.setBrdContent((String) requestJsonHashMap.get("brdContent"));
@@ -347,51 +352,54 @@ public class BoardController {
 //		svc.uploadFile(fileVO);
 //	}
 //
-//	/* 다운로드 */
-//	@RequestMapping(value = "/fileDownload")
-//	public void fileDownload(@RequestParam long fileRandomNo, @RequestParam Integer brdNo, HttpServletRequest request,
-//			HttpServletResponse response) throws IOException {
-//		logger.info("다운로드할 게시글 번호 : " + brdNo);
-//
-//		String path = fileDownload;
-//		FileVO fileVO = svc.getFileList(brdNo);
-//
-//		if (fileVO.getFileRandomNo() != fileRandomNo) {
-//			logger.info(fileRandomNo + " :난수 검증 실패");
-//			return;
-//		}
-//		logger.info("난수 검증 성공 : " + fileRandomNo);
-//
-//		String filename = fileVO.getFileName();
-//
-//		String realPath = path + filename;
-//		logger.info("파일 다운 경로 " + realPath);
-//
-//		file = new File(realPath);
-//
-//		/* 파일명 지정 */
-//		String outputFileName = new String(fileVO.getFileRealName().getBytes("KSC5601"), "8859_1");
-//		response.setHeader("Content-Disposition", "attachment; filename=\"" + outputFileName + "\"");
-//
-//		OutputStream os = response.getOutputStream();
-//		FileInputStream fis = new FileInputStream(realPath);
-//		int ncount = 0;
-//		byte[] bytes = new byte[512];
-//		try {
-//
-//			while ((ncount = fis.read(bytes)) != -1) {
-//				os.write(bytes, 0, ncount);
-//			}
-//
-//		} catch (FileNotFoundException ex) {
-//			logger.info("에러발생 로그::" + ex);
-//		} catch (IOException ex) {
-//			logger.info("에러발생 로그::" + ex);
-//		} finally {
-//			fis.close();
-//			os.close();
-//		}
-//	}
+	/* 다운로드 */
+	@RequestMapping(value = "/fileDownload")
+	public void fileDownload(@RequestBody HashMap<String, Object> requestJsonHashMap,  HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		
+		long fileRandomNo = (long) requestJsonHashMap.get("fileRandomNo");
+		Integer brdNo = (Integer) requestJsonHashMap.get("fileBrdNo");
+		logger.info("다운로드할 게시글 번호 : " + brdNo);
+
+		String path = fileDownload;
+		FileVO fileVO = svc.getFileList(brdNo);
+
+		if (fileVO.getFileRandomNo() != fileRandomNo) {
+			logger.info(fileRandomNo + " :난수 검증 실패");
+			return;
+		}
+		logger.info("난수 검증 성공 : " + fileRandomNo);
+
+		String filename = fileVO.getFileName();
+
+		String realPath = path + filename;
+		logger.info("파일 다운 경로 " + realPath);
+
+		file = new File(realPath);
+
+		/* 파일명 지정 */
+		String outputFileName = new String(fileVO.getFileRealName().getBytes("KSC5601"), "8859_1");
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + outputFileName + "\"");
+
+		OutputStream os = response.getOutputStream();
+		FileInputStream fis = new FileInputStream(realPath);
+		int ncount = 0;
+		byte[] bytes = new byte[512];
+		try {
+
+			while ((ncount = fis.read(bytes)) != -1) {
+				os.write(bytes, 0, ncount);
+			}
+
+		} catch (FileNotFoundException ex) {
+			logger.info("에러발생 로그::" + ex);
+		} catch (IOException ex) {
+			logger.info("에러발생 로그::" + ex);
+		} finally {
+			fis.close();
+			os.close();
+		}
+	}
 //
 //	/* 파일삭제 */
 //	@RequestMapping(value = "fileDelete")

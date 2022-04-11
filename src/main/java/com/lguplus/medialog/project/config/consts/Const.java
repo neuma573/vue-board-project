@@ -13,7 +13,7 @@ public class Const {
 	public static final String LOGIN_PWD_PARAM = "userPwd";
 	public static final String LOGIN_EXTRA_PARAM = "userDomain";
 	public static final String FORM_LOGIN_URL = "/login";
-	public static final String FORM_LOGIN_SUCC_URL = "/view/home";
+	public static final String FORM_LOGIN_SUCC_URL = "/board";
 	public static final String FORM_LOGIN_FAIL_URL = "/login?error=true";
 	public static final String LOGIN_API_URL = "/api/auth/login";
 	public static final String TOKEN_API_URL = "/api/auth/token";
