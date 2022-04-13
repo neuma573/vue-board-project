@@ -55,13 +55,9 @@ public class LoginController {
 	 * https://tech.junhabaek.net/spring-security-usernamepasswordauthenticationfilter의-더-깊은-이해-8b5927dbc037
 	 */
 	@PostMapping("/api/auth/login")
-	public RestResult<?> login(@RequestBody HashMap<String, Object> requestJsonHashMap, User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public RestResult<?> login(@RequestBody User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 //		UsernamePasswordAuthenticationToken token = new CustomAuthenticationToken(user.getUsername(), user.getPassword(), user.getUserDomain());
 		logger.info(user.toString());
-		logger.info(requestJsonHashMap.toString());
-    	user.setUserId(requestJsonHashMap.get("userId").toString());
-    	user.setUserDomain(requestJsonHashMap.get("domain").toString());
-    	user.setUserPwd(requestJsonHashMap.get("userPwd").toString());
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
         Authentication authentication = null;
 
@@ -77,6 +73,8 @@ public class LoginController {
         // form login 하면 UsernamePasswordAuthenticationFilter에서 context 저장을 해준다.
         // 하지만 일반 URL로 요청을 직접 받았기 때문에 UsernamePasswordAuthenticationFilter를 타지 않는다.
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        logger.info("권한"+ authentication);
+        logger.info("SCH:::::::::"+ SecurityContextHolder.getContext().toString());
         HttpSession session = request.getSession();
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
         

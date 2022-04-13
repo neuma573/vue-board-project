@@ -21,7 +21,7 @@ export default {
       User: {
         userId: 'bar',
         userPwd: 'barpwd',
-        domain: 'acorp'
+        userDomain: 'acorp'
       },
       redir: '',
       isSuccess: false
