@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import VueCookies from 'vue-cookies'
 
 const routes = [
   {
@@ -10,7 +11,8 @@ const routes = [
   {
     path: '/login',
     name: 'loginView',
-    component: () => import(/* webpackChunkName: "about" */ '../views/LoginView.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../views/LoginView.vue'),
+    meta: { unauthorized: true }
   },
   {
     path: '/about',
@@ -58,6 +60,19 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
+})
+
+router.beforeEach(async (to, from, next) => {
+  if (VueCookies.get('token') === null && VueCookies.get('refresh_token') !== null) {
+    await VueCookies.refreshToken()
+  }
+
+  if (to.matched.some(record => record.meta.unauthorized) || VueCookies.get('token')) {
+    return next()
+  }
+
+  alert('로그인 해주세요')
+  return next('/login')
 })
 
 export default router

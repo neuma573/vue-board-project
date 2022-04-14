@@ -5,7 +5,7 @@
     <form @submit.prevent="fnLogin()">
         <input type="text" id="id" name="userId" v-model="User.userId" class="int id bg" title="아이디" placeholder="아이디" maxlength="20">
         <input type="password" id="pw" name="userPwd" v-model="User.userPwd" class="int pw bg" title="비밀번호 입력" placeholder="비밀번호" maxlength="40">
-        <input type="text" name="userDomain" v-model="User.domain" placeholder="도메인"/>
+        <input type="text" name="userDomain" v-model="User.userDomain" placeholder="도메인"/>
         <button type="submit" class="btn_blue small btn_wfull">로그인</button>
     </form>
     </div>
@@ -14,6 +14,8 @@
 </template>
 <script>
 import axios from 'axios'
+import VueCookies from 'vue-cookies'
+import Vuesession from 'vue-session'
 export default {
   components: {},
   data () {
@@ -28,7 +30,10 @@ export default {
     }
   },
   beforeCreate () {},
-  created () {},
+  created () {
+    Vuesession.set('id', '아이디입니다')
+    Vuesession.get('id')
+  },
   beforeMount () {},
   mounted () {},
   beforeUpdate () {},
@@ -51,6 +56,8 @@ export default {
         })
         .finally((res) => {
           if (this.isSuccess) {
+            VueCookies.set('token', this.User.userId, 60)
+            console.log(VueCookies.get('token') + '로 로그인했습니다')
             this.$router.push(this.redir)
           } else {
             alert('로그인에 실패했습니다')

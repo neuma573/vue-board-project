@@ -84,13 +84,15 @@
 </template>
 <script>
 import axios from 'axios'
+import VueCookies from 'vue-cookies'
+const userKey = VueCookies.get('token')
 export default {
   components: {},
   data () {
     return {
       sortByOrder: '게시글 계층 정렬',
       sortByRegDt: '게시글 최신순 정렬',
-      userId: '',
+      userId: userKey,
       boardList: [
         { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0', brdNo: '-1' },
         { brdTitle: '테스트 글제목', brdWriter: 'foo', brdRegDt: '2022-03-31', brdHit: '3', brdReCnt: '0', brdNo: '-1' },
@@ -108,11 +110,12 @@ export default {
   },
   beforeCreate () {},
   created () {
+    this.$session.get('id')
     let a = 1
-    console.log(a)
     a = this.$route.params.page
-    console.log(a)
     this.getData(a)
+    this.userId = VueCookies.get('token')
+    console.log(VueCookies.get('token') + '유저 접속중')
   },
   beforeMount () {},
   mounted () {},
@@ -123,14 +126,13 @@ export default {
   methods: {
 
     getData (parameter) {
-      console.log(parameter)
+      console.log(parameter + '페이지를 출력중')
       axios
         .get('http://localhost:8080/board?page=' + parameter)
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
           this.boardList = res.data.boardList
-          this.userId = res.data.userId
           this.pageVO = res.data.pageVO
           console.log('겟액션')
         })

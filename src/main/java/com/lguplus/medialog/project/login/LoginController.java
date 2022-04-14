@@ -82,10 +82,10 @@ public class LoginController {
         logger.debug("login SUCCESS - nextUrl = [{}]", nextUrl);
         
         ResultCode rcode = authPost.getSuccessResultCode(request, response, authentication);
-        
+        logger.info(rcode.toString());
         if (rcode != ResultCode.SUCCESS)
         	return new RestResult<String>(false).setCode(rcode);
-        
+        new RestResult<String>().setData(nextUrl);
         return new RestResult<String>().setData(nextUrl);
     }
 

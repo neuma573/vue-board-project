@@ -77,8 +77,7 @@ public class BoardController {
 //		return listview;
 //	}
     @GetMapping("")
-    public Map<String, Object> boardList(@RequestParam(value = "page", required = false) Integer id, PageVO pageVO, HttpSession session) throws Exception{
-    	
+    public Map<String, Object> boardList(@RequestParam(value = "page", required = false) Integer id, PageVO pageVO, HttpSession session) throws Exception{  	
     	if(id==null) {
     		id=1;
     	}logger.info("받아온 페이지넘버"+id.toString());
@@ -304,27 +303,32 @@ public class BoardController {
 //
 //	/* 게시판 글쓰기 */
 	@RequestMapping(value = "/boardpost", method = RequestMethod.POST)
-	public void uploadBoard(@RequestBody HashMap<String, Object> requestJsonHashMap, BoardVO board) throws Exception {
+	public void uploadBoard(@RequestBody HashMap<String, Object> requestJsonHashMap, BoardVO board, FileVO fileVO,
+			 @RequestParam(required = false) MultipartFile uploadFile,
+			 @RequestParam String action,
+			 @RequestParam(required = false) Integer brdNo,
+			 @RequestParam(required = false) Integer brdDepth) throws Exception {
 		logger.info(requestJsonHashMap.toString());
     	board.setBrdWriter((String) requestJsonHashMap.get("brdWriter"));
     	board.setBrdTitle((String) requestJsonHashMap.get("brdTitle"));
     	board.setBrdContent((String) requestJsonHashMap.get("brdContent"));
 		logger.info(board.toString());
 		String formatDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-//		switch (action) {
-//		case "write":
+		switch (action) {
+		case "write":
 			svc.uploadBoard(board);
-//			break;
-//		case "reply":
-//			svc.uploadBoard(board);
-//			break;
-//		case "modify":
-//			board.setBrdNo(brdNo);
-//			board.setBrdModDt(formatDate);
-//			svc.boardModifyRegist(board);
-//			break;
-//		}
-//
+			break;
+		case "reply":
+			board.setBrdDepth(formatDate);
+			svc.uploadBoard(board);
+			break;
+		case "modify":
+			board.setBrdNo(brdNo);
+			board.setBrdModDt(formatDate);
+			svc.boardModifyRegist(board);
+			break;
+		}
+
 //		if (!uploadFile.isEmpty()) {
 //			logger.info("파일업로드 로그 : " + uploadFile);
 //			logger.info(uploadFile.getName());
@@ -334,7 +338,7 @@ public class BoardController {
 //		}
 	}
 
-//	/* 파일업로드 */
+	/* 파일업로드 */
 //	public void uploadFile(FileVO fileVO, MultipartFile uploadFile, BoardVO board) throws IOException {
 //		String originalFileExtension = uploadFile.getOriginalFilename()
 //				.substring(uploadFile.getOriginalFilename().lastIndexOf("."));
@@ -351,20 +355,20 @@ public class BoardController {
 //		fileVO.setFileName(storedFileName);
 //		svc.uploadFile(fileVO);
 //	}
-//
+
 	/* 다운로드 */
-	@RequestMapping(value = "/fileDownload")
+	@PostMapping(value = "/fileDownload")
 	public void fileDownload(@RequestBody HashMap<String, Object> requestJsonHashMap,  HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+		HttpServletResponse response) throws IOException {
 		
-		long fileRandomNo = (long) requestJsonHashMap.get("fileRandomNo");
+		String fileRandomNo = (String) requestJsonHashMap.get("fileRandomNo");
 		Integer brdNo = (Integer) requestJsonHashMap.get("fileBrdNo");
 		logger.info("다운로드할 게시글 번호 : " + brdNo);
 
 		String path = fileDownload;
 		FileVO fileVO = svc.getFileList(brdNo);
 
-		if (fileVO.getFileRandomNo() != fileRandomNo) {
+		if (!fileVO.getFileRandomNo().equals(fileRandomNo)) {
 			logger.info(fileRandomNo + " :난수 검증 실패");
 			return;
 		}
@@ -401,7 +405,7 @@ public class BoardController {
 		}
 	}
 //
-//	/* 파일삭제 */
+	/* 파일삭제 */
 //	@RequestMapping(value = "fileDelete")
 //	public String deleteFile(@RequestParam("id") String id, @RequestParam("bid") Integer bid, Model model)
 //			throws IOException {
@@ -422,29 +426,37 @@ public class BoardController {
 //		model.addAttribute("board", board);
 //		return "board/somePage.empty";
 //	}
-//
-//	/* 게시판 글삭제 */
-//	@RequestMapping(value = "/boardDelete")
-//	public String boardDelete(@RequestParam("id") Integer id, Model model, PageVO pageVO, HttpSession session) throws Exception {
-//		if (!SpringUtils.getCurrentUserName().equals(board.getBrdWriter())) {
-//			model.addAttribute("err", "[다른 사람의 글은 삭제할 수 없습니다]");
-//			return "board/BoardFailure";
-//		} else if (!svc.boardDelete(id)) {
-//			model.addAttribute("err", "답글이 존재하여 삭제할 수 없습니다");
-//			return "board/BoardFailure";
-//		}
-//		svc.deleteFileByParents(id);
-//		svc.commentDeleteByParents(id);
-//		Integer currPage = Integer.parseInt(session.getAttribute("currPage").toString());
-//		Integer rowCalculate = Integer.parseInt(session.getAttribute("rowCalculate").toString());
-//		if (rowCalculate==0) {
-//			currPage--;
-//		}
-//		logger.info(currPage+" 페이지로 돌아갑니다");
-//		logger.info("계산결과 "+rowCalculate);
-//		return "redirect:/page/board?page=" + currPage;
-//	}
-//
+
+	/* 게시판 글삭제 */
+	@RequestMapping(value = "/boarddelete")
+	public String boardDelete(@RequestParam("id") Integer id, Model model, PageVO pageVO, HttpSession session) throws Exception {
+		String user = "";
+		try {
+			user = SpringUtils.getCurrentUserName();
+		}
+		catch(Exception e) {
+			user = "bar";
+		}
+		user="bar";
+		if (user.equals(board.getBrdWriter())) {
+			model.addAttribute("err", "[다른 사람의 글은 삭제할 수 없습니다]");
+			return "board/BoardFailure";
+		} else if (!svc.boardDelete(id)) {
+			model.addAttribute("err", "답글이 존재하여 삭제할 수 없습니다");
+			return "board/BoardFailure";
+		}
+		svc.deleteFileByParents(id);
+		svc.commentDeleteByParents(id);
+		Integer currPage = Integer.parseInt(session.getAttribute("currPage").toString());
+		Integer rowCalculate = Integer.parseInt(session.getAttribute("rowCalculate").toString());
+		if (rowCalculate==0) {
+			currPage--;
+		}
+		logger.info(currPage+" 페이지로 돌아갑니다");
+		logger.info("계산결과 "+rowCalculate);
+		return "redirect:/page/board?page=" + currPage;
+	}
+
 //	/* 댓글저장 */
 //	@RequestMapping(value = "/commentPost")
 //	public String boardReplySave(ReplyVO boardReplyInfo) {

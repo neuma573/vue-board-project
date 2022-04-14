@@ -32,13 +32,14 @@
 
 <script>
 import axios from 'axios'
+import VueCookies from 'vue-cookies'
 export default {
   components: {},
   data () {
     return {
       boardVO: {
         brdTitle: '테스트 글제목',
-        brdWriter: 'foo',
+        brdWriter: VueCookies.get('token'),
         brdContent: '글내용등록함'
       }
 
@@ -56,7 +57,7 @@ export default {
     fnPost () {
       console.log(this.boardVO)
       axios
-        .post('http://localhost:8080/board/boardpost', this.boardVO)
+        .post('http://localhost:8080/board/boardpost?action=write', this.boardVO)
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
@@ -73,6 +74,30 @@ export default {
           console.log('항상 마지막에 실행')
         })
       this.$router.push('/board')
+    },
+    fnModify () {
+      axios
+        .post('http://localhost:8080/board/boardpost?action=modify&brdNo=' + this.boardVO.brdNo, this.boardVO)
+        .then((res) => {
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+        .finally(() => {
+          console.log('항상 마지막에 실행')
+        })
+    },
+    fnReply () {
+      axios
+        .post('http://localhost:8080/board/boardpost?action=reply&brdNo=' + this.boardVO.brdNo + '&brdDepth=' + this.boardVO.brdDepth, this.boardVO)
+        .then((res) => {
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+        .finally(() => {
+          console.log('항상 마지막에 실행')
+        })
     }
 
   }

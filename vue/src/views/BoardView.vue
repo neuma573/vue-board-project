@@ -42,14 +42,12 @@
         <td>첨부파일</td>
         <td>
             <div v-if="file!=null">
-                <form action="/board/fileDownload" method="post">
                     파일이름:
                     {{file.fileRealName}} 크기:
                     {{file.fileSize}} byte
                     <input name="fileRandomNo" type="hidden" v-model="file.fileRandomNo">
                     <input name="brdNo" type="hidden" v-model="boardVO.brdNo">
-                    <input type="submit" value="버튼" @click="fnDownload">
-                </form>
+                    <input type="button" value="버튼" @click="fnDownload">
             </div>
             <br />
         </td>
@@ -57,22 +55,22 @@
 </table>
 <table style="width: 900px;">
     <th>
-        <form action="#" method="post">
-            <input type="hidden" value="modify" name="action" />
-            <input type="hidden" value="${board.brdNo}" name="id" />
-            <input type="submit" value="수정" />
+<form v-on:submit="fnModify">
+            <input type="hidden" v-model="modify" name="action" />
+            <input type="hidden" v-model="boardVO.brdNo" name="id" />
+            <input type="button" value="수정"/>
         </form>
     </th>
     <th>
-        <form action="/page/board/boardWrite" method="post">
-            <input type="hidden" value="reply" name="action" />
-            <input type="hidden" value="${board.brdNo}" name="id" />
-            <input type="hidden" value="${board.brdOrigin}" name="origin" />
-            <input type="submit" value="답글" />
+<form v-on:submit="fnModify">
+            <input type="hidden" v-model="reply" name="action" />
+            <input type="hidden" v-model="boardVO.brdNo" name="id" />
+            <input type="hidden" v-model="boardVO.brdOrigin" name="origin" />
+            <input type="button" value="답글" />
         </form>
     </th>
     <th>
-        <button id="delete" onclick="location.href='boardDelete?id=${board.brdNo}'">삭제</button>
+        <button a @click="fnDelete" class="off">삭제</button>
     </th>
     <th>
         <a href="/board">돌아가기</a>
@@ -144,7 +142,6 @@ export default {
   },
   beforeCreate () {},
   created () {
-    console.log(this.$route.params.id)
     this.id.id = this.$route.params.id
     this.getBoardDetail(this.id.id)
   },
@@ -156,18 +153,16 @@ export default {
   unmounted () {},
   methods: {
     getBoardDetail (parameter) {
-      console.info(parameter)
+      console.info(parameter + '번 게시글 불러오기 성공')
       axios
         .get('http://localhost:8080/board/boardview?id=' + parameter)
         .then((res) => {
-          console.log(res.staus)
-          console.log(res.data)
           this.boardVO = res.data.boardVO
           this.rePlyList = res.data.rePlyList
           this.pageVO = res.data.pageVO
           this.file = res.data.file
+          console.log(this.file)
           console.log('겟액션')
-          this.paging()
         })
         .catch((error) => {
           console.log(error)
@@ -177,17 +172,18 @@ export default {
         })
     },
     fnDownload () {
+      const FileDownload = require('js-file-download')
       this.file.fileBrdNo = this.boardVO.brdNo
       axios
-        .post('http://localhost:8080/board/fileDownload', this.file)
+        .post('http://localhost:8080/board/fileDownload', this.file, { responseType: 'blob' })
         .then((res) => {
           console.log(res.staus)
           console.log(res.data)
           this.boardList = res.data.boardList
           this.userId = res.data.userId
           this.pageVO = res.data.pageVO
+          FileDownload(res.data, this.file.fileRealName)
           console.log('겟액션')
-          this.paging()
         })
         .catch((error) => {
           console.log(error)
@@ -195,7 +191,18 @@ export default {
         .finally(() => {
           console.log('항상 마지막에 실행')
         })
-      this.$router.push('/board')
+    },
+    fnDelete () {
+      axios
+        .post('http://localhost:8080/board/boarddelete?id=' + this.boardVO.brdNo)
+        .then((res) => {
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+        .finally(() => {
+          console.log('항상 마지막에 실행')
+        })
     }
   }
 }
