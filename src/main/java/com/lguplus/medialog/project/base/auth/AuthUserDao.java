@@ -25,4 +25,7 @@ public interface AuthUserDao {
 	public User getByUsernameAndDomain(String userId, String userDomain);
 	public String[] getRolesByUsernameAndDomain(String userId, String userDomain);
 	
+	public int insertLog (User user);
+	public String checkLog (String userId);
+	public int updateLog (String token);
 }

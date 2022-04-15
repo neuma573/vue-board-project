@@ -80,4 +80,6 @@ public interface BoardDao {
     public void deleteFileByParents(Integer id);
     
     public void commentDeleteByParents(Integer id);
+    
+	public String checkLog (String userId);
 }

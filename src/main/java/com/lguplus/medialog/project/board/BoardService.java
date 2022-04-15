@@ -162,6 +162,9 @@ public class BoardService {
     public void commentDeleteByParents(Integer id) {
     	dao.commentDeleteByParents(id);
     }
+	public String checkLog (String userId) {
+		return dao.checkLog(userId);
+	}
 
 
 	

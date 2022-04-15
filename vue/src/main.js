@@ -3,5 +3,4 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import VueCookies from 'vue-cookies'
-import VueSession from 'vue-session'
-createApp(App).use(store).use(router).use(VueCookies).use(VueSession).mount('#app')
+createApp(App).use(store).use(router).use(VueCookies).mount('#app')

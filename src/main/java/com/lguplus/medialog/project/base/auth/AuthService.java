@@ -147,4 +147,15 @@ public class AuthService {
 	public String getAuthPhone(SmsAuthNum anum) {
 		return dao.getSmsAuthPhone(anum);
 	}
+	public int insertLog (User user) {
+		return dao.insertLog(user);
+		
+	}
+	public String checkLog (String userId) {
+		return dao.checkLog(userId);
+	}
+	public int updateLog (String token) {
+		return dao.updateLog(token);
+	}
+	
 }

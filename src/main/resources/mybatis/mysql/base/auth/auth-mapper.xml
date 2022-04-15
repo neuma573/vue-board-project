@@ -149,5 +149,38 @@
 		WHERE 
 			u.USER_ID = #{userId} AND u.USER_DOMAIN = #{userDomain}
 	</select>
+	
+	<insert id="insertLog"
+		parameterType="com.lguplus.medialog.project.base.user.User">
+		/* authuser-mapper.xml(insertLog) */
+		
+		INSERT INTO LOGIN_LOG (
+			LOG_ID,
+			LOG_TOKEN,
+			LOG_DT,
+			LOG_IS_AUTH_VALID
+			) 
+		VALUES (
+			#{userId}, 
+			#{token}, 
+			now(), 
+			'Y'
+		    )
+	</insert>
+	<select id="checkLog"
+		parameterType="String">
+		/* authuser-mapper.xml(insertLog) */
+		SELECT
+			LOG_ID,
+			LOG_TOKEN,
+			LOG_DT,
+			LOG_IS_AUTH_VALID
+		FROM
+			LOGIN_LOG
+		WHERE 
+			LOG_ID = #{userId} and LOG_IS_AUTH_VALID = 'Y'
+		ORDER BY LOG_DT
+		DESC LIMIT 1
 
+	</select>
 </mapper>

@@ -20,6 +20,7 @@ public class User extends AuthUser {
 	private LocalDateTime regDt;
 	private LocalDateTime updateDt;
 	private String regUserId;
+	private String token;
 
 	private List<Role> roles;
 

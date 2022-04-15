@@ -40,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lguplus.medialog.project.base.auth.AuthService;
 import com.lguplus.medialog.project.common.utils.DownloadUtils;
 import com.lguplus.medialog.project.common.utils.SpringUtils;
 
@@ -62,6 +63,7 @@ public class BoardController {
 	BoardVO board;
 	PageVO pageVO;
 	String userId = SpringUtils.getCurrentUserName();
+	private AuthService authSvc;
 //	@GetMapping("")
 //	public List boardList(PageVO pageVO, Model model, HttpSession session) throws Exception {
 //		int pageNum = 33;
@@ -76,6 +78,9 @@ public class BoardController {
 //        logger.info(model.toString());
 //		return listview;
 //	}
+
+	
+	
     @GetMapping("")
     public Map<String, Object> boardList(@RequestParam(value = "page", required = false) Integer id, PageVO pageVO, HttpSession session) throws Exception{  	
     	if(id==null) {
@@ -303,12 +308,25 @@ public class BoardController {
 //
 //	/* 게시판 글쓰기 */
 	@RequestMapping(value = "/boardpost", method = RequestMethod.POST)
-	public void uploadBoard(@RequestBody HashMap<String, Object> requestJsonHashMap, BoardVO board, FileVO fileVO,
+	public Map<String, Object> uploadBoard(@RequestBody HashMap<String, Object> requestJsonHashMap, BoardVO board, FileVO fileVO,
 			 @RequestParam(required = false) MultipartFile uploadFile,
 			 @RequestParam String action,
 			 @RequestParam(required = false) Integer brdNo,
 			 @RequestParam(required = false) Integer brdDepth) throws Exception {
 		logger.info(requestJsonHashMap.toString());
+		Map<String, Object> data = new HashMap();
+		String userId = (String) requestJsonHashMap.get("brdWriter");
+		String gotToken = (String) requestJsonHashMap.get("token");
+		String realToken = svc.checkLog(userId);
+		logger.info("받은토큰: "+gotToken);
+		logger.info("서버토큰: "+realToken);
+		if(!gotToken.equals(realToken)) {
+			logger.info("토큰 불일치");
+			data.put("status", "tokenNotMatch");
+			return data;
+		}
+		
+		
     	board.setBrdWriter((String) requestJsonHashMap.get("brdWriter"));
     	board.setBrdTitle((String) requestJsonHashMap.get("brdTitle"));
     	board.setBrdContent((String) requestJsonHashMap.get("brdContent"));
@@ -329,32 +347,40 @@ public class BoardController {
 			break;
 		}
 
-//		if (!uploadFile.isEmpty()) {
-//			logger.info("파일업로드 로그 : " + uploadFile);
-//			logger.info(uploadFile.getName());
-//			logger.info(Long.toString(uploadFile.getSize()));
-//			logger.info("파일명 : " + uploadFile.getOriginalFilename());
-//			uploadFile(fileVO, uploadFile, board);
-//		}
+		if (!uploadFile.isEmpty()) {
+			logger.info("파일업로드 로그 : " + uploadFile);
+			logger.info(uploadFile.getName());
+			logger.info(Long.toString(uploadFile.getSize()));
+			logger.info("파일명 : " + uploadFile.getOriginalFilename());
+			uploadFile(fileVO, uploadFile, board);
+		}
+		data.put("status", "success");
+		return data;
 	}
 
 	/* 파일업로드 */
-//	public void uploadFile(FileVO fileVO, MultipartFile uploadFile, BoardVO board) throws IOException {
-//		String originalFileExtension = uploadFile.getOriginalFilename()
-//				.substring(uploadFile.getOriginalFilename().lastIndexOf("."));
-//		String storedFileName = SpringUtils.getCurrentUserName() + System.currentTimeMillis() + originalFileExtension;
-//		String filePath = fileDownload;
-//		file = new File(filePath + storedFileName);
-//		DownloadUtils.upload(uploadFile, file);
-//		
-//		SecureRandom num = new SecureRandom();
-//		fileVO.setFileRandomNo(num.nextLong());
-//		fileVO.setFileBrdNo(board.getBrdNo());
-//		fileVO.setFileRealName(uploadFile.getOriginalFilename());
-//		fileVO.setFileSize(uploadFile.getSize());
-//		fileVO.setFileName(storedFileName);
-//		svc.uploadFile(fileVO);
-//	}
+	public void uploadFile(FileVO fileVO, MultipartFile uploadFile, BoardVO board) throws IOException {
+		String originalFileExtension = uploadFile.getOriginalFilename()
+				.substring(uploadFile.getOriginalFilename().lastIndexOf("."));
+		String storedFileName = SpringUtils.getCurrentUserName() + System.currentTimeMillis() + originalFileExtension;
+		String filePath = fileDownload;
+		file = new File(filePath + storedFileName);
+		DownloadUtils.upload(uploadFile, file);
+		
+    	StringBuilder sb = new StringBuilder();
+		SecureRandom num = new SecureRandom();
+        for(int i=0; i<10; i++) {
+        	sb.append((char)num.nextInt(61)+65);
+        }
+		
+
+		fileVO.setFileRandomNo(sb.toString());
+		fileVO.setFileBrdNo(board.getBrdNo());
+		fileVO.setFileRealName(uploadFile.getOriginalFilename());
+		fileVO.setFileSize(uploadFile.getSize());
+		fileVO.setFileName(storedFileName);
+		svc.uploadFile(fileVO);
+	}
 
 	/* 다운로드 */
 	@PostMapping(value = "/fileDownload")
@@ -426,35 +452,43 @@ public class BoardController {
 //		model.addAttribute("board", board);
 //		return "board/somePage.empty";
 //	}
-
+	
 	/* 게시판 글삭제 */
 	@RequestMapping(value = "/boarddelete")
-	public String boardDelete(@RequestParam("id") Integer id, Model model, PageVO pageVO, HttpSession session) throws Exception {
-		String user = "";
-		try {
-			user = SpringUtils.getCurrentUserName();
+	public Map<String, Object> boardDelete(@RequestBody HashMap<String, Object> requestJsonHashMap, @RequestParam("id") Integer id, Model model, PageVO pageVO) throws Exception {
+		Map<String, Object> data = new HashMap();
+		logger.info(requestJsonHashMap.toString());
+		String userId = (String) requestJsonHashMap.get("userId");
+		String gotToken = (String) requestJsonHashMap.get("token");
+		String realToken = svc.checkLog(userId);
+		logger.info("받은토큰: "+gotToken);
+		logger.info("서버토큰: "+realToken);
+		if(!gotToken.equals(realToken)) {
+			logger.info("토큰 불일치");
+			data.put("status", "tokenNotMatch");
+			return data;
 		}
-		catch(Exception e) {
-			user = "bar";
+		
+		if(!board.getBrdWriter().equals(userId)) {
+			data.put("status", "noAuthDelete");
+			return data;
 		}
-		user="bar";
-		if (user.equals(board.getBrdWriter())) {
-			model.addAttribute("err", "[다른 사람의 글은 삭제할 수 없습니다]");
-			return "board/BoardFailure";
-		} else if (!svc.boardDelete(id)) {
-			model.addAttribute("err", "답글이 존재하여 삭제할 수 없습니다");
-			return "board/BoardFailure";
+		else if (!svc.boardDelete(id)) {
+			data.put("status", "childExsist");
+			return data;
 		}
 		svc.deleteFileByParents(id);
 		svc.commentDeleteByParents(id);
-		Integer currPage = Integer.parseInt(session.getAttribute("currPage").toString());
-		Integer rowCalculate = Integer.parseInt(session.getAttribute("rowCalculate").toString());
-		if (rowCalculate==0) {
-			currPage--;
-		}
-		logger.info(currPage+" 페이지로 돌아갑니다");
-		logger.info("계산결과 "+rowCalculate);
-		return "redirect:/page/board?page=" + currPage;
+//		Integer currPage = Integer.parseInt(session.getAttribute("currPage").toString());
+//		Integer rowCalculate = Integer.parseInt(session.getAttribute("rowCalculate").toString());
+//		if (rowCalculate==0) {
+//			currPage--;
+//		}
+//		logger.info(currPage+" 페이지로 돌아갑니다");
+//		logger.info("계산결과 "+rowCalculate);
+		
+		data.put("status", "success");
+		return data;
 	}
 
 //	/* 댓글저장 */

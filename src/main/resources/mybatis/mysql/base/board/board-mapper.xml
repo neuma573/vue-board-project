@@ -473,6 +473,17 @@
            SET BRD1.BRD_ORDER = BRD1.BRD_ORDER - 1 
          WHERE BRD2.BRD_NO=#{brdNo} 
     </update>
+	<select id="checkLog" parameterType="String" resultType="String">
+		/* board-mapper.xml(checktLog) */
+		SELECT
+			LOG_TOKEN
+		FROM
+			LOGIN_LOG
+		WHERE 
+			LOG_ID = #{userId} and LOG_IS_AUTH_VALID = 'Y'
+		ORDER BY LOG_DT
+		DESC LIMIT 1
 
+	</select>
 
 </mapper>

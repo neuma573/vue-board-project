@@ -15,7 +15,6 @@
 <script>
 import axios from 'axios'
 import VueCookies from 'vue-cookies'
-import Vuesession from 'vue-session'
 export default {
   components: {},
   data () {
@@ -26,14 +25,12 @@ export default {
         userDomain: 'acorp'
       },
       redir: '',
-      isSuccess: false
+      isSuccess: false,
+      token: ''
     }
   },
   beforeCreate () {},
-  created () {
-    Vuesession.set('id', '아이디입니다')
-    Vuesession.get('id')
-  },
+  created () {},
   beforeMount () {},
   mounted () {},
   beforeUpdate () {},
@@ -45,20 +42,24 @@ export default {
       axios
         .post('http://localhost:8080/api/auth/login', this.User)
         .then((res) => {
-          console.log(res.staus)
           console.log(res.data)
           this.redir = res.data.data
           this.isSuccess = res.data.success
-          console.log('포스트액션')
+          this.token = res.data.message
         })
         .catch((error) => {
           console.log(error)
         })
         .finally((res) => {
           if (this.isSuccess) {
-            VueCookies.set('token', this.User.userId, 60)
-            console.log(VueCookies.get('token') + '로 로그인했습니다')
+            VueCookies.set('token', this.token)
+            sessionStorage.setItem('token', this.token)
+            this.$store.state.userId = this.User.userId
+            this.$store.state.token = this.token
+            this.$store.state.isLogin = true
+            VueCookies.set('token', this.token)
             this.$router.push(this.redir)
+            alert(this.$store.state.userId + '님이 로그인하셨습니다')
           } else {
             alert('로그인에 실패했습니다')
           }

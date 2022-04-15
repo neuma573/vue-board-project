@@ -45,8 +45,6 @@
                     파일이름:
                     {{file.fileRealName}} 크기:
                     {{file.fileSize}} byte
-                    <input name="fileRandomNo" type="hidden" v-model="file.fileRandomNo">
-                    <input name="brdNo" type="hidden" v-model="boardVO.brdNo">
                     <input type="button" value="버튼" @click="fnDownload">
             </div>
             <br />
@@ -62,18 +60,13 @@
         </form>
     </th>
     <th>
-<form v-on:submit="fnModify">
-            <input type="hidden" v-model="reply" name="action" />
-            <input type="hidden" v-model="boardVO.brdNo" name="id" />
-            <input type="hidden" v-model="boardVO.brdOrigin" name="origin" />
-            <input type="button" value="답글" />
-        </form>
+<button  @click="fnReply" >답글</button>
     </th>
     <th>
         <button a @click="fnDelete" class="off">삭제</button>
     </th>
     <th>
-        <a href="/board">돌아가기</a>
+        <button a @click="fnGoBack">돌아가기</button>
     </th>
 </table>
 <hr style="width: 900px; float:left;" />
@@ -108,6 +101,7 @@
 </template>
 <script>
 import axios from 'axios'
+import VueCookies from 'vue-cookies'
 export default {
   components: {},
   data () {
@@ -136,8 +130,8 @@ export default {
         {
           fileName: '', fileNo: '', fileRandomNo: '', fileRealName: '', fileSize: '', fileBrdNo: ''
         }
-      ]
-
+      ],
+      result: ''
     }
   },
   beforeCreate () {},
@@ -194,15 +188,65 @@ export default {
     },
     fnDelete () {
       axios
-        .post('http://localhost:8080/board/boarddelete?id=' + this.boardVO.brdNo)
+        .post('http://localhost:8080/board/boarddelete?id=' + this.boardVO.brdNo, this.$store.state)
         .then((res) => {
+          console.log(res.data)
+          this.result = res.data.status
         })
         .catch((error) => {
           console.log(error)
         })
         .finally(() => {
+          switch (this.result) {
+            case 'success':
+              this.$router.push('/board')
+              alert('삭제가 성공적으로 완료됐습니다')
+              break
+            case 'tokenNotMatch':
+              alert('토큰이 검증되지 않았습니다. 로그인 페이지로 이동합니다')
+              this.$store.token = ''
+              this.$store.isLogin = false
+              VueCookies.remove('token')
+              this.$router.push('/logout')
+              break
+            case 'noAuthDelete' :
+              alert('삭제할 수 있는 권한이 없습니다.')
+              break
+            case 'childExsist' :
+              alert('최하위 레벨의 게시글만 삭제가 가능합니다. 자식이 존재하여 삭제할 수 없습니다.')
+              break
+          }
           console.log('항상 마지막에 실행')
         })
+    },
+    fnGoBack () {
+      this.$router.go(-1)
+    },
+    fnModify () {
+      this.$router.push(
+        {
+          name: 'write',
+          params:
+        {
+          id: this.boardVO.brdNo,
+          origin: this.boardVO.origin,
+          action: 'modify'
+        }
+        }
+      )
+    },
+    fnReply () {
+      this.$router.push(
+        {
+          name: 'write',
+          params:
+        {
+          id: this.boardVO.brdNo,
+          origin: this.boardVO.origin,
+          action: 'reply'
+        }
+        }
+      )
     }
   }
 }

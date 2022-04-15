@@ -1,6 +1,8 @@
 <template>
 <div class="wrap_inner">
-                      접속유저 : {{ userId }} | {{ sortType }}
+                      접속유저 : {{ this.$store.state.userId }} | {{ sortType }}
+                      {{ this.$store.state.token }}
+                      {{ this.$store.state.isLogin }}
     <main id="container">
 <section class="board_section">
     <header>
@@ -110,12 +112,12 @@ export default {
   },
   beforeCreate () {},
   created () {
-    this.$session.get('id')
+    console.info(sessionStorage.getItem('token'))
     let a = 1
     a = this.$route.params.page
     this.getData(a)
-    this.userId = VueCookies.get('token')
-    console.log(VueCookies.get('token') + '유저 접속중')
+    this.userId = this.$store.state.userId
+    console.log(this.userId + '유저 접속중')
   },
   beforeMount () {},
   mounted () {},
@@ -130,7 +132,6 @@ export default {
       axios
         .get('http://localhost:8080/board?page=' + parameter)
         .then((res) => {
-          console.log(res.staus)
           console.log(res.data)
           this.boardList = res.data.boardList
           this.pageVO = res.data.pageVO

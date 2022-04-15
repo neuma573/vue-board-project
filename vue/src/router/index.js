@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import VueCookies from 'vue-cookies'
+import { store } from '@/store'
 
 const routes = [
   {
@@ -54,6 +55,14 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "ServerData" */ '../views/BoardView.vue')
+  },
+  {
+    path: '/logout',
+    name: 'logout',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    redirect: '/login'
   }
 ]
 
@@ -67,11 +76,14 @@ router.beforeEach(async (to, from, next) => {
     await VueCookies.refreshToken()
   }
 
-  if (to.matched.some(record => record.meta.unauthorized) || VueCookies.get('token')) {
+  if ((to.matched.some(record => record.meta.unauthorized) || VueCookies.get('token'))) {
     return next()
   }
-
+  console.log(store)
+  VueCookies.remove('token')
+  sessionStorage.removeItem('token')
   alert('로그인 해주세요')
+  console.log('항상 마지막에 실행')
   return next('/login')
 })
 

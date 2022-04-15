@@ -1,6 +1,7 @@
 package com.lguplus.medialog.project.login;
 
 import java.util.HashMap;
+import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lguplus.medialog.project.base.auth.AuthPostProcessor;
@@ -54,6 +57,13 @@ public class LoginController {
 	 * https://catsbi.oopy.io/4d4859e7-029e-4791-bbe8-0bde66fb7670
 	 * https://tech.junhabaek.net/spring-security-usernamepasswordauthenticationfilter의-더-깊은-이해-8b5927dbc037
 	 */
+	
+	@RequestMapping(value ="/api/auth/invalidToken", method = RequestMethod.POST)
+	public void tokenTerminate(@RequestBody HashMap<String, Object> requestJsonHashMap) {
+		logger.info(requestJsonHashMap.toString());
+		authPost.updateLog("ff");
+	}
+	
 	@PostMapping("/api/auth/login")
 	public RestResult<?> login(@RequestBody User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 //		UsernamePasswordAuthenticationToken token = new CustomAuthenticationToken(user.getUsername(), user.getPassword(), user.getUserDomain());
@@ -78,19 +88,30 @@ public class LoginController {
         HttpSession session = request.getSession();
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
         
+        Random ran = new Random();
+    	StringBuilder sb = new StringBuilder();
+        for(int i=0; i<10; i++) {
+        	char a = (char) (ran.nextInt(61)+65);
+        	sb.append(a);
+        }
+        user.setToken(sb.toString());
+        authPost.insertLog(user);
         String nextUrl = getReturnUrl(request, response);
         logger.debug("login SUCCESS - nextUrl = [{}]", nextUrl);
-        
+
+        user.setToken(sb.toString());
         ResultCode rcode = authPost.getSuccessResultCode(request, response, authentication);
         logger.info(rcode.toString());
+
+    	
+
+        
         if (rcode != ResultCode.SUCCESS)
         	return new RestResult<String>(false).setCode(rcode);
-        new RestResult<String>().setData(nextUrl);
-        return new RestResult<String>().setData(nextUrl);
+        return new RestResult<String>().setData(nextUrl).setCode(rcode).setMessage(sb.toString());
     }
 
-	/**
-	 * 로그인 전에 요청했던 URL 반환
+	/** 	 * 로그인 전에 요청했던 URL 반환
 	 */
 	private String getReturnUrl(HttpServletRequest request, HttpServletResponse response) {
 		RequestCache requestCache = new HttpSessionRequestCache();

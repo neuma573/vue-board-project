@@ -39,14 +39,17 @@ export default {
     return {
       boardVO: {
         brdTitle: '테스트 글제목',
-        brdWriter: VueCookies.get('token'),
-        brdContent: '글내용등록함'
-      }
-
+        brdWriter: this.$store.state.userId,
+        brdContent: '글내용등록함',
+        token: VueCookies.get('token')
+      },
+      action: ''
     }
   },
   beforeCreate () {},
-  created () {},
+  created () {
+    this.action = this.$route.params.action
+  },
   beforeMount () {},
   mounted () {},
   beforeUpdate () {},

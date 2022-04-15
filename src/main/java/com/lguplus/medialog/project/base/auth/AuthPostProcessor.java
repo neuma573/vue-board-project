@@ -22,6 +22,18 @@ public class AuthPostProcessor {
 	@Autowired
 	private AuthService authSvc;
 
+	
+	
+	public int insertLog (User user) {
+		return authSvc.insertLog(user);
+	}
+	public int updateLog(String userId) {
+		return authSvc.updateLog(userId);
+	}
+	public String checkLog (String token) {
+		return authSvc.checkLog(token);
+	}
+	
 	public ResultCode getSuccessResultCode(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 		ResultCode resultCode = ResultCode.SUCCESS;
 		User user = (User) authentication.getPrincipal();
